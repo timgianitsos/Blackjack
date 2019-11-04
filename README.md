@@ -4,7 +4,7 @@
 
 Daniel Mendoza
 
-Maika Isogawa
+[Maika Isogawa](https://github.com/maikaisogawa)
 
 [Tim Gianitsos](https://github.com/timgianitsos)
 
