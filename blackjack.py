@@ -131,7 +131,8 @@ def rollout(state,depth,policy_func):
 def initial_state():
     deck = [4 for i in range(0,10)]
     hand = [0 for i in range(0,10)]
-    return [deck,hand.copy(),hand.copy()]
+    return [deck, list(hand), list(hand)]
+    #return [deck,hand.copy(),hand.copy()]
 
 class MCTS:
     def __init__(self):
