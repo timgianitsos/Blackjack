@@ -43,11 +43,12 @@ def draw_card_from_deck(deck):
     possible_cards = []
     for card in range(0,len(deck)):
         if deck[card] > 0:
-            possible_cards.append(card)
+            for i in range(0,deck[card]):
+                possible_cards.append(card)
     if len(possible_cards) == 0:
         return -1
     else:
-        drawn_card = np.random.randint(0,len(possible_cards))
+        drawn_card = possible_cards[np.random.randint(0,len(possible_cards))]
         return drawn_card
 
 
@@ -225,7 +226,10 @@ def simulate(mcts,state,history,depth):
     max_q = float('-inf')
     tmp_qval = []
     for act in action_space():
-        q_val = mcts.Q[(history,act)] + mcts.c*np.sqrt(np.log(mcts.N_h[history])/mcts.N_ha[(history,act)])
+        if mcts.N_ha[(history,act)] > 0 and mcts.N_h[history] > 0:
+            q_val = mcts.Q[(history,act)] + mcts.c*np.sqrt(np.log(mcts.N_h[history])/mcts.N_ha[(history,act)])
+        else:
+            q_val = mcts.Q[(history,act)]
         if q_val > max_q:
             max_q = q_val
             opt_act = act
