@@ -1,3 +1,4 @@
+# pylint: disable = C
 '''Main script'''
 
 import sys

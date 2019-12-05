@@ -1,5 +1,6 @@
+# pylint: disable = C, no-else-return, no-else-break
+# pylint: disable = too-many-instance-attributes, too-few-public-methods, invalid-sequence-index
 import itertools
-import matplotlib.pyplot as plt
 import numpy as np
 import collections
 import operator as op
@@ -10,12 +11,13 @@ def ncr(n, r):
     r = min(r, n-r)
     numer = reduce(op.mul, range(n, n-r, -1), 1)
     denom = reduce(op.mul, range(1, r+1), 1)
-    return numer / denom
+    return numer // denom
 
-def action_space(): return [0,1]
+def action_space():
+    return [0, 1]
 
 def state_space(max_card_val):
-    all_deck = list(itertools.product([0,1, 2, 3, 4], repeat=max_card_val))
+    return list(itertools.product([0, 1, 2, 3, 4], repeat=max_card_val))
 
 #state of 1 dealer and 1 player = (cards in deck, cards in player's hand, cards in dealer's hand)
 
@@ -70,16 +72,15 @@ def belief_policy(state):
 
 def draw_card_from_deck(deck):
     possible_cards = []
-    for card in range(0,len(deck)):
+    for card in range(0, len(deck)):
         if deck[card] > 0:
-            for i in range(0,deck[card]):
+            for _ in range(0, deck[card]):
                 possible_cards.append(card)
     if len(possible_cards) == 0:
         return -1
     else:
-        drawn_card = possible_cards[np.random.randint(0,len(possible_cards))]
+        drawn_card = possible_cards[np.random.randint(0, len(possible_cards))] 
         return drawn_card
-
 
 def compare_hand(player,dealer):
     playscore = calc_handscore(player)
@@ -109,7 +110,8 @@ def generate_new_game(state):
         new_state[player%2+1][drawn_card] += 1
     return new_state
 
-def generate_nstate_reward(state,action,verbose=False):
+#TODO pylint warns of too many branches
+def generate_nstate_reward(state,action,verbose=False): 
     if action == 1:
         drawn_card = draw_card_from_deck(state[0])
         if drawn_card == -1:
@@ -206,6 +208,7 @@ def generate_new_game_withobserv(state):
         new_state[player%2+1][drawn_card] += 1
     return (new_state,observation)
 
+#TODO pylint warns of too many branches
 #(s',o,r) ~ G(s,a)
 def generate_nstate_observ_reward(state,action,verbose=False):
     observation = []
@@ -269,7 +272,7 @@ def simulate(mcts,state,history,depth):
             if (history,act) in mcts.Q_nought:
                 mcts.Q[(history,act)] = mcts.Q_nought[(history,act)]
             if act == 0:
-                    mcts.Q[(history,act)] = mcts.Q_nought[(history,act)] = (-1. + calc_handscore(state[1])/11.)
+                mcts.Q[(history,act)] = mcts.Q_nought[(history,act)] = (-1. + calc_handscore(state[1])/11.)
         mcts.T.add(history)
         return rollout(mcts.gamma,state,depth,belief_policy)
 
@@ -304,8 +307,8 @@ def simulate(mcts,state,history,depth):
 def get_all_possible_fulldeckstarts():
     states = []
     hidden_cards = []
-    agenthand = list(itertools.combinations([i for i in range(0,10)],2))
-    dealerhand = list(itertools.permutations([i for i in range(0,10)],2))
+    agenthand = itertools.combinations(range(0,10), 2)
+    dealerhand = itertools.permutations(range(0,10), 2)
     for agent in agenthand:
         for dealer in dealerhand:
             s = initial_state()
@@ -330,7 +333,7 @@ def possiblebelief(belief_state):
             possible_deck[card] += -1
             possible_dealerhand = observed_dealerhand.copy()
             possible_dealerhand[card] += 1
-            for n in range(0,init_deck[card]):
+            for _ in range(0,init_deck[card]):
                 possible_states.append([possible_deck,agenthand.copy(),possible_dealerhand])
     return possible_states
 
@@ -338,7 +341,7 @@ def possiblebelief(belief_state):
 def selectaction(mcts,beliefstate,depth,max_iters):
     history = tuple()
     all_possible_states = possiblebelief(beliefstate)
-    for iter in range(0,max_iters):
+    for _ in range(0, max_iters):
         #print("sampling belief!")
         sampled_state = copy.deepcopy(all_possible_states[np.random.randint(0,len(all_possible_states))])
         #print("sampled: agent=",calc_handscore(sampled_state[1])," dealer=",calc_handscore(sampled_state[2]))
@@ -366,8 +369,8 @@ def update_beliefstate(beliefstate,state,reward):
         new_beliefstate = copy.deepcopy(state)
         dealer_cards = []
         for card in range(0,len(state[2])):
-                for i in range(0,state[2][card]):
-                    dealer_cards.append(card)
+            for _ in range(0,state[2][card]):
+                dealer_cards.append(card)
         hidden_card = dealer_cards[np.random.randint(0,2)]
         new_beliefstate[2][hidden_card] += -1
         new_beliefstate[0][hidden_card] += 1
@@ -379,6 +382,7 @@ def update_beliefstate(beliefstate,state,reward):
         return new_beliefstate
         #agent has vision of new card in his hand
 
+#TODO pylint warns of too many branches and too many local variables
 def game_simulate(n_games,shuffle_freq,policy=None,verbose=False):
     game_count = 0
     total_utility = 0.
@@ -390,7 +394,7 @@ def game_simulate(n_games,shuffle_freq,policy=None,verbose=False):
             init_s = generate_new_game(initial_state())
             dealer_cards = []
             for card in range(0,len(init_s[2])):
-                for i in range(0,init_s[2][card]):
+                for _ in range(0,init_s[2][card]):
                     dealer_cards.append(card)
 
             #create belief_state for MCTS sampling
@@ -436,13 +440,12 @@ def game_simulate(n_games,shuffle_freq,policy=None,verbose=False):
                 break
     return total_utility
 
-
-
-np.random.seed(0)
-print("MCTS=",game_simulate(50,10))
-print("naive0=",game_simulate(50,10,naive_policy0))
-print("naive1=",game_simulate(50,10,naive_policy1))
-print("random=",game_simulate(50,10,random_policy))
+if __name__ == '__main__':
+    np.random.seed(0)
+    print("MCTS=",game_simulate(50,10))
+    print("naive0=",game_simulate(50,10,naive_policy0))
+    print("naive1=",game_simulate(50,10,naive_policy1))
+    print("random=",game_simulate(50,10,random_policy))
 
 """
 #init_s = generate_new_game(initial_state())
