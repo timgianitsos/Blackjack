@@ -2,7 +2,7 @@
 
 ## Authors
 
-Daniel Mendoza
+[Daniel Mendoza](https://github.com/dmmendo)
 
 [Maika Isogawa](https://github.com/maikaisogawa)
 
